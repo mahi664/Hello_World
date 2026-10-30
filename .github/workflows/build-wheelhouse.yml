@@ -20,6 +20,7 @@ jobs:
           cat > requirements.txt <<'EOF'
           fastapi==0.119.0
           uvicorn[standard]==0.37.0
+          exceptiongroup==1.2.2
           EOF
           mkdir -p wheelhouse
           cat requirements.txt
