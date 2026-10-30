@@ -13,13 +13,13 @@ permissions:
 
 jobs:
   build-wheelhouse:
-    # Apple Silicon hosted runner. No project source code is checked out.
-    runs-on: macos-14-xlarge
+    # Standard GitHub-hosted Linux runner; downloads wheels for the Mac target.
+    runs-on: ubuntu-latest
     steps:
-      - name: Set up Python 3.9
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
       - name: Create requirements file
         env:
@@ -30,16 +30,29 @@ jobs:
           echo "Requested dependency lines:"
           grep -cve '^[[:space:]]*$' requirements.txt || true
 
-      - name: Build wheels
+      - name: Download macOS ARM64 CPython 3.9 wheels
         run: |
           python -m pip install --upgrade pip
-          python -m pip wheel --wheel-dir wheelhouse -r requirements.txt
+          python -m pip download \
+            --only-binary=:all: \
+            --dest wheelhouse \
+            --platform macosx_11_0_arm64 \
+            --platform macosx_10_9_universal2 \
+            --python-version 39 \
+            --implementation cp \
+            --abi cp39 \
+            --abi abi3 \
+            --abi none \
+            -r requirements.txt
 
-      - name: Add environment manifest
+      - name: Add target manifest
         run: |
-          python --version > wheelhouse/BUILD-INFO.txt
-          uname -m >> wheelhouse/BUILD-INFO.txt
-          sw_vers >> wheelhouse/BUILD-INFO.txt
+          {
+            echo "Target: macOS ARM64"
+            echo "Python: CPython 3.9"
+            echo "Architecture: arm64"
+            echo "Built using cross-platform pip download on Ubuntu"
+          } > wheelhouse/BUILD-INFO.txt
 
       - name: Upload wheelhouse artifact
         uses: actions/upload-artifact@v4
