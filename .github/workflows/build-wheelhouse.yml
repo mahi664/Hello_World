@@ -2,18 +2,12 @@ name: Build macOS ARM64 Python 3.9 wheelhouse
 
 on:
   workflow_dispatch:
-    inputs:
-      requirements:
-        description: "Paste requirements.txt contents (one package per line)"
-        required: true
-        type: string
 
 permissions:
   contents: read
 
 jobs:
   build-wheelhouse:
-    # Standard GitHub-hosted Linux runner; downloads wheels for the Mac target.
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
@@ -22,13 +16,13 @@ jobs:
           python-version: "3.11"
 
       - name: Create requirements file
-        env:
-          REQUIREMENTS: ${{ inputs.requirements }}
         run: |
+          cat > requirements.txt <<'EOF'
+          fastapi==0.119.0
+          uvicorn[standard]==0.37.0
+          EOF
           mkdir -p wheelhouse
-          printf '%s\\n' "$REQUIREMENTS" > requirements.txt
-          echo "Requested dependency lines:"
-          grep -cve '^[[:space:]]*$' requirements.txt || true
+          cat requirements.txt
 
       - name: Download macOS ARM64 CPython 3.9 wheels
         run: |
@@ -51,7 +45,6 @@ jobs:
             echo "Target: macOS ARM64"
             echo "Python: CPython 3.9"
             echo "Architecture: arm64"
-            echo "Built using cross-platform pip download on Ubuntu"
           } > wheelhouse/BUILD-INFO.txt
 
       - name: Upload wheelhouse artifact
