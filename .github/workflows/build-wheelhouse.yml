@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-wheelhouse:
     # Apple Silicon hosted runner. No project source code is checked out.
-    runs-on: macos-14-xlarge
+    runs-on: macos-14-arm64
     steps:
       - name: Set up Python 3.9
         uses: actions/setup-python@v5
@@ -26,7 +26,7 @@ jobs:
           REQUIREMENTS: ${{ inputs.requirements }}
         run: |
           mkdir -p wheelhouse
-          printf '%s\n' "$REQUIREMENTS" > requirements.txt
+          printf '%s\\n' "$REQUIREMENTS" > requirements.txt
           echo "Requested dependency lines:"
           grep -cve '^[[:space:]]*$' requirements.txt || true
 
